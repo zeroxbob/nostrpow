@@ -7,8 +7,10 @@ import { NIP19Page } from "./pages/NIP19Page";
 import NotFound from "./pages/NotFound";
 
 export function AppRouter() {
+  const basename = import.meta.env.BASE_URL;
+  
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={basename}>
       <ScrollToTop />
       <Routes>
         <Route path="/" element={<Index />} />
