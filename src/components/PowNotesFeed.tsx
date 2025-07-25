@@ -25,15 +25,51 @@ export const PowNotesFeed = () => {
       const timeoutSignal = AbortSignal.timeout(10000);
       const combinedSignal = AbortSignal.any([signal, timeoutSignal]);
 
-      // Fetch notes with PoW (look for events with nonce tags)
-      // We'll fetch a higher limit and filter them client-side based on difficulty
-      const fetchedEvents = await nostr.query([
-        {
-          kinds: [1], // Text notes
-          limit: 500,
-          "#nonce": [], // Events with nonce tag
+      // Modified approach to fetch notes with potential PoW
+      // 1. First try to fetch notes with nonce tags
+      // 2. Then fetch recent notes and check their difficulty
+      let fetchedEvents: NostrEvent[] = [];
+
+      try {
+        // Try with nonce tag filter first
+        const nonceEvents = await nostr.query([
+          {
+            kinds: [1], // Text notes
+            limit: 100,
+            "#nonce": [], // Events with nonce tag
+          }
+        ], { signal: combinedSignal });
+
+        fetchedEvents = [...nonceEvents];
+
+        // Also fetch recent notes without the nonce filter
+        const recentEvents = await nostr.query([
+          {
+            kinds: [1], // Text notes
+            limit: 200,
+            since: Math.floor(Date.now() / 1000) - 60 * 60 * 24 * 30 // Last 30 days
+          }
+        ], { signal: combinedSignal });
+
+        // Combine all events, removing duplicates
+        const allEventIds = new Set(fetchedEvents.map(e => e.id));
+        for (const event of recentEvents) {
+          if (!allEventIds.has(event.id)) {
+            fetchedEvents.push(event);
+            allEventIds.add(event.id);
+          }
         }
-      ], { signal: combinedSignal });
+      } catch (error) {
+        console.error("Failed to fetch events:", error);
+        // Fallback to just recent events if the first query fails
+        fetchedEvents = await nostr.query([
+          {
+            kinds: [1], // Text notes
+            limit: 200,
+            since: Math.floor(Date.now() / 1000) - 60 * 60 * 24 * 30 // Last 30 days
+          }
+        ], { signal: combinedSignal });
+      }
 
       // Filter events with minimum difficulty
       return fetchedEvents.filter(event => countLeadingZeroBits(event.id) >= minDifficulty);
@@ -180,9 +216,17 @@ export const PowNotesFeed = () => {
             <CardContent className="py-12 px-8 text-center">
               <div className="max-w-sm mx-auto space-y-6">
                 <p className="text-muted-foreground">
-                  No notes with PoW found. Try lowering the difficulty filter or switch to another relay.
+                  No notes with PoW found. Try the following:
                 </p>
+                <ul className="text-left text-muted-foreground space-y-2 mb-4">
+                  <li>• Switch to relays like <code className="text-xs">wss://relay.damus.io</code> or <code className="text-xs">wss://nostr.wine</code></li>
+                  <li>• Lower the minimum difficulty filter</li>
+                  <li>• Create your own PoW note to experiment</li>
+                </ul>
                 <RelaySelector className="w-full" />
+                <Button asChild variant="outline" className="w-full mt-4">
+                  <a href="/create">Create Your Own PoW Note</a>
+                </Button>
               </div>
             </CardContent>
           </Card>

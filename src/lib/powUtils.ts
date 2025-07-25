@@ -9,9 +9,18 @@
  * @returns Number of leading zero bits
  */
 export function countLeadingZeroBits(hex: string): number {
-  let count = 0;
+  // Ensure we have a valid hex string
+  if (!hex || typeof hex !== 'string') {
+    return 0;
+  }
 
+  let count = 0;
   for (let i = 0; i < hex.length; i++) {
+    // Skip non-hex characters
+    if (!/[0-9a-f]/i.test(hex[i])) {
+      continue;
+    }
+
     const nibble = parseInt(hex[i], 16);
     if (nibble === 0) {
       count += 4;
