@@ -1,13 +1,13 @@
 import { useSeoMeta } from '@unhead/react';
-import { PowNotesFeed } from '@/components/PowNotesFeed';
+import { CreatePowNote } from '@/components/CreatePowNote';
 import { LoginArea } from '@/components/auth/LoginArea';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 
-const Index = () => {
+const CreatePowPage = () => {
   useSeoMeta({
-    title: 'Nostr PoW Explorer | Discover Proof of Work Notes',
-    description: 'Explore and sort Nostr notes by their Proof of Work difficulty. Discover content with the highest computational effort.',
+    title: 'Create PoW Note | Nostr PoW Explorer',
+    description: 'Create your own Nostr note with Proof of Work. Mine a note with your desired difficulty level.',
   });
 
   return (
@@ -17,10 +17,10 @@ const Index = () => {
           <div className="flex items-center gap-4">
             <h1 className="text-lg font-bold">Nostr PoW Explorer</h1>
             <div className="flex gap-2">
-              <Button variant="default" size="sm" asChild>
+              <Button variant="ghost" size="sm" asChild>
                 <Link to="/">Explore</Link>
               </Button>
-              <Button variant="ghost" size="sm" asChild>
+              <Button variant="default" size="sm" asChild>
                 <Link to="/create">Create</Link>
               </Button>
             </div>
@@ -33,7 +33,7 @@ const Index = () => {
       </header>
 
       <main>
-        <PowNotesFeed />
+        <CreatePowNote />
       </main>
       
       <footer className="mt-12 border-t py-6 dark:border-gray-800">
@@ -58,4 +58,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default CreatePowPage;
